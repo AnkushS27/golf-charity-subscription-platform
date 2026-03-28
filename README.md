@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fairway Forward
 
-## Getting Started
+Subscription golf platform with monthly score-based prize draws and charity contributions.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 16 App Router
+- TypeScript strict mode
+- NextAuth (Auth.js) credentials auth
+- Prisma + PostgreSQL
+- Tailwind CSS
+- Vercel Blob (winner proof uploads)
+- Resend (email notifications)
+- Pino (structured logging)
+- Vitest (domain tests)
+
+## Core Features
+
+- Subscriber signup/login and protected dashboards
+- Subscription lifecycle with mock payment success/failure simulation
+- Rolling latest-5 Stableford score retention
+- Monthly draw simulation and publish workflows
+- Prize split logic (40/35/25) and 5-match rollover support
+- Charity contributions and independent donations
+- Winner proof upload, admin verification, payout status updates
+- Notification and audit event recording for sensitive operations
+
+## Local Setup
+
+1. Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Configure environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+copy .env.example .env
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Fill all required values in .env:
 
-## Learn More
+- DATABASE_URL
+- AUTH_SECRET
+- RESEND_API_KEY
+- BLOB_READ_WRITE_TOKEN
+- APP_BASE_URL
+- LOG_LEVEL
 
-To learn more about Next.js, take a look at the following resources:
+3. Generate Prisma client and apply migrations
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm prisma:generate
+pnpm prisma:migrate
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Seed demo data
 
-## Deploy on Vercel
+```bash
+pnpm prisma:seed
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. Run locally
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm dev
+```
+
+## Quality Checks
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+```
+
+## Project Structure
+
+- app/(auth): login/signup UI
+- app/(user): subscriber dashboard
+- app/(admin): admin operations and reporting
+- app/actions: server actions for business workflows
+- lib/domain: pure business logic (draw, scoring, winners, prize pool)
+- lib/ops: audit + notification event helpers
+- lib/validation: Zod input schemas
+- prisma: schema and seed data
+- tests/domain: domain-level unit tests
+
+## Operational Notes
+
+- Middleware enforces authentication for non-public routes.
+- Notifications are always persisted in the database. Email delivery is best-effort and failures are logged.
+- Audit events are written for draw simulation/publish, subscription changes, donation creation, winner verification, and payout updates.
+
+## Admin Reporting APIs
+
+- GET /api/admin/reports/summary: JSON snapshot of users, subscriptions, verification/payout queues, totals, and latest draw info.
+- GET /api/admin/reports/charities-csv: downloadable CSV export of charity impact totals.
+
+Both endpoints require an authenticated admin session.
+
+## Deployment Readiness Checklist
+
+1. Provision PostgreSQL and set DATABASE_URL.
+2. Set AUTH_SECRET for NextAuth session signing.
+3. Add Resend API key and verified sender domain.
+4. Add Vercel Blob token.
+5. Run Prisma migrations in target environment.
+6. Seed initial plan and charity data.
+7. Run lint, typecheck, and tests in CI before promotion.

@@ -1,65 +1,82 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, HandHeart, LayoutDashboard, Sparkles, Ticket, Trophy } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-8 md:px-10">
+      <section className="grain mt-4 rounded-3xl border border-black/10 p-8 md:mt-8 md:grid md:grid-cols-[1.4fr_1fr] md:gap-10 md:p-10">
+        <div>
+          <p className="inline-flex rounded-full border border-black/15 px-3 py-1 text-xs font-semibold tracking-[0.12em] text-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              SCORES. DRAWS. CHARITY.
+            </span>
           </p>
+          <h1 className="mt-5 text-4xl font-semibold leading-tight md:text-6xl">
+            Play better golf.
+            <br />
+            Fund real causes.
+            <br />
+            Win every month.
+          </h1>
+          <p className="mt-6 max-w-xl text-base leading-7 text-muted md:text-lg">
+            Track your latest five Stableford scores, join monthly prize draws, and direct a minimum of 10% of your
+            subscription to the charity you care about most.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/signup" className="rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-black/85">
+              <span className="inline-flex items-center gap-1.5">
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                Start Subscription
+              </span>
+            </Link>
+            <Link href="/dashboard" className="rounded-full border border-black/20 px-6 py-3 text-sm font-medium transition hover:border-black/40">
+              <span className="inline-flex items-center gap-1.5">
+                <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+                Open Dashboard
+              </span>
+            </Link>
+            <Link href="/charities" className="rounded-full border border-black/20 px-6 py-3 text-sm font-medium transition hover:border-black/40">
+              <span className="inline-flex items-center gap-1.5">
+                <HandHeart className="h-4 w-4" aria-hidden="true" />
+                Explore Charities
+              </span>
+            </Link>
+            <Link href="/draw-mechanics" className="rounded-full border border-black/20 px-6 py-3 text-sm font-medium transition hover:border-black/40">
+              <span className="inline-flex items-center gap-1.5">
+                <Ticket className="h-4 w-4" aria-hidden="true" />
+                Draw Mechanics
+              </span>
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="mt-8 grid gap-3 md:mt-0">
+          <article className="rounded-2xl border border-black/10 bg-surface p-4">
+            <p className="text-xs font-semibold tracking-[0.12em] text-muted">MONTHLY DRAW</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-2xl font-semibold">
+              <Ticket className="h-6 w-6" aria-hidden="true" />
+              5 Numbers
+            </p>
+            <p className="mt-1 text-sm text-muted">Random or weighted mode, admin-controlled simulation before publishing.</p>
+          </article>
+          <article className="rounded-2xl border border-black/10 bg-surface p-4">
+            <p className="text-xs font-semibold tracking-[0.12em] text-muted">PRIZE ENGINE</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-2xl font-semibold">
+              <Trophy className="h-6 w-6" aria-hidden="true" />
+              40 / 35 / 25
+            </p>
+            <p className="mt-1 text-sm text-muted">Tiered pool split with 5-match rollover and equal splits among tied winners.</p>
+          </article>
+          <article className="rounded-2xl border border-black/10 bg-surface p-4">
+            <p className="text-xs font-semibold tracking-[0.12em] text-muted">CHARITY IMPACT</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-2xl font-semibold">
+              <HandHeart className="h-6 w-6" aria-hidden="true" />
+              10% Minimum
+            </p>
+            <p className="mt-1 text-sm text-muted">Choose your charity at signup, then increase your contribution whenever you want.</p>
+          </article>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

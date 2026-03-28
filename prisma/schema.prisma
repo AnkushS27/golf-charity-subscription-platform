@@ -1,0 +1,272 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+enum UserRole {
+    SUBSCRIBER
+    ADMIN
+}
+
+enum SubscriptionStatus {
+    ACTIVE
+    CANCELED
+    LAPSED
+    TRIAL
+}
+
+enum BillingCycle {
+    MONTHLY
+    YEARLY
+}
+
+enum DrawStatus {
+    DRAFT
+    SIMULATED
+    PUBLISHED
+}
+
+enum DrawMode {
+    RANDOM
+    WEIGHTED_MOST_FREQUENT
+    WEIGHTED_LEAST_FREQUENT
+}
+
+enum WinnerTier {
+    MATCH_3
+    MATCH_4
+    MATCH_5
+}
+
+enum VerificationStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+enum PayoutStatus {
+    PENDING
+    PAID
+}
+
+model User {
+    id                   String                    @id @default(cuid())
+    email                String                    @unique
+    passwordHash         String?
+    fullName             String
+    role                 UserRole                  @default(SUBSCRIBER)
+    isActive             Boolean                   @default(true)
+    createdAt            DateTime                  @default(now())
+    updatedAt            DateTime                  @updatedAt
+    subscriptions        Subscription[]
+    scoreEntries         ScoreEntry[]
+    charityContributions CharityContribution[]
+    independentDonations IndependentDonation[]
+    drawSnapshots        DrawParticipantSnapshot[]
+    drawWins             DrawWinner[]
+    notifications        Notification[]
+    auditLogs            AuditLog[]
+
+    @@index([role, isActive])
+}
+
+model SubscriptionPlan {
+    id            String         @id @default(cuid())
+    code          String         @unique
+    name          String
+    billingCycle  BillingCycle
+    amountInMinor Int
+    currency      String         @default("GBP")
+    isActive      Boolean        @default(true)
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    subscriptions Subscription[]
+}
+
+model Subscription {
+    id                    String             @id @default(cuid())
+    userId                String
+    planId                String
+    status                SubscriptionStatus @default(TRIAL)
+    startedAt             DateTime           @default(now())
+    currentPeriodStartAt  DateTime           @default(now())
+    currentPeriodEndAt    DateTime
+    canceledAt            DateTime?
+    mockPaymentShouldFail Boolean            @default(false)
+    createdAt             DateTime           @default(now())
+    updatedAt             DateTime           @updatedAt
+    user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+    plan                  SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+    @@index([userId, status])
+    @@index([currentPeriodEndAt])
+}
+
+model Charity {
+    id            String                @id @default(cuid())
+    slug          String                @unique
+    name          String
+    description   String
+    imageUrl      String?
+    websiteUrl    String?
+    featured      Boolean               @default(false)
+    isActive      Boolean               @default(true)
+    createdAt     DateTime              @default(now())
+    updatedAt     DateTime              @updatedAt
+    contributions CharityContribution[]
+    donations     IndependentDonation[]
+    payouts       Payout[]
+}
+
+model CharityContribution {
+    id                   String   @id @default(cuid())
+    userId               String
+    charityId            String
+    contributionPercent  Decimal  @db.Decimal(5, 2)
+    sourceSubscriptionId String?
+    amountInMinor        Int
+    currency             String   @default("GBP")
+    createdAt            DateTime @default(now())
+    user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    charity              Charity  @relation(fields: [charityId], references: [id], onDelete: Restrict)
+
+    @@index([userId, charityId])
+}
+
+model IndependentDonation {
+    id            String   @id @default(cuid())
+    userId        String
+    charityId     String
+    amountInMinor Int
+    currency      String   @default("GBP")
+    createdAt     DateTime @default(now())
+    user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    charity       Charity  @relation(fields: [charityId], references: [id], onDelete: Restrict)
+}
+
+model ScoreEntry {
+    id        String   @id @default(cuid())
+    userId    String
+    score     Int
+    playedAt  DateTime
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, playedAt])
+}
+
+model MonthlyDraw {
+    id                    String                    @id @default(cuid())
+    year                  Int
+    month                 Int
+    status                DrawStatus                @default(DRAFT)
+    mode                  DrawMode                  @default(RANDOM)
+    numbersJson           Json
+    simulationNumbersJson Json?
+    totalPrizePoolInMinor Int                       @default(0)
+    rolloverInMinor       Int                       @default(0)
+    publishedAt           DateTime?
+    createdAt             DateTime                  @default(now())
+    updatedAt             DateTime                  @updatedAt
+    drawNumbers           DrawNumber[]
+    participants          DrawParticipantSnapshot[]
+    winners               DrawWinner[]
+
+    @@unique([year, month])
+    @@index([status, month, year])
+}
+
+model DrawNumber {
+    id       String      @id @default(cuid())
+    drawId   String
+    position Int
+    value    Int
+    draw     MonthlyDraw @relation(fields: [drawId], references: [id], onDelete: Cascade)
+
+    @@unique([drawId, position])
+}
+
+model DrawParticipantSnapshot {
+    id             String      @id @default(cuid())
+    drawId         String
+    userId         String
+    scoreSetJson   Json
+    charityPercent Decimal     @db.Decimal(5, 2)
+    createdAt      DateTime    @default(now())
+    draw           MonthlyDraw @relation(fields: [drawId], references: [id], onDelete: Cascade)
+    user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([drawId, userId])
+}
+
+model DrawWinner {
+    id            String              @id @default(cuid())
+    drawId        String
+    userId        String
+    tier          WinnerTier
+    amountInMinor Int
+    payoutStatus  PayoutStatus        @default(PENDING)
+    createdAt     DateTime            @default(now())
+    updatedAt     DateTime            @updatedAt
+    draw          MonthlyDraw         @relation(fields: [drawId], references: [id], onDelete: Cascade)
+    user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    verification  WinnerVerification?
+
+    @@index([drawId, tier])
+}
+
+model WinnerVerification {
+    id               String             @id @default(cuid())
+    winnerId         String             @unique
+    proofBlobUrl     String
+    status           VerificationStatus @default(PENDING)
+    adminNotes       String?
+    reviewedByUserId String?
+    reviewedAt       DateTime?
+    createdAt        DateTime           @default(now())
+    updatedAt        DateTime           @updatedAt
+    winner           DrawWinner         @relation(fields: [winnerId], references: [id], onDelete: Cascade)
+}
+
+model Payout {
+    id            String       @id @default(cuid())
+    charityId     String
+    periodLabel   String
+    amountInMinor Int
+    currency      String       @default("GBP")
+    status        PayoutStatus @default(PENDING)
+    paidAt        DateTime?
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
+    charity       Charity      @relation(fields: [charityId], references: [id], onDelete: Restrict)
+}
+
+model Notification {
+    id          String    @id @default(cuid())
+    userId      String
+    channel     String
+    subject     String
+    payloadJson Json
+    sentAt      DateTime?
+    createdAt   DateTime  @default(now())
+    user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, sentAt])
+}
+
+model AuditLog {
+    id          String   @id @default(cuid())
+    actorUserId String?
+    action      String
+    entity      String
+    entityId    String?
+    payloadJson Json?
+    createdAt   DateTime @default(now())
+    user        User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+    @@index([action, entity, createdAt])
+}
